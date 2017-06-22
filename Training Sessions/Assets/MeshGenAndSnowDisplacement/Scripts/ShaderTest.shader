@@ -41,7 +41,7 @@ Shader "Custom/ShaderTest"
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
 
-				o.vertex.y += tex2D(_NoiseTex, v.uv).r * 100;
+				o.vertex.y += tex2Dlod(_NoiseTex, half4(v.uv,0,0)).r * 100;
 
 				o.uv = v.uv;
 				return o;

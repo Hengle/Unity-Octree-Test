@@ -18,9 +18,14 @@ public class octreeItem : MonoBehaviour {
 	{
 		if (transform.position != prevPos) 
 		{
-			//REORDENA EL ARBOL
+			//octreeNode.root.processItem (this); //Later-
 
 			prevPos = transform.position;
 		}
+	}
+
+	public void addToRoot()
+	{
+		octreeNode.root.processItem (this);
 	}
 }

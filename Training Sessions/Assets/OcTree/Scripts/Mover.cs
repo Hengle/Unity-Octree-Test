@@ -1,29 +1,39 @@
-﻿using UnityEngine;
+﻿//using System.Collections.Generic;
+//using System.Collections;
+using UnityEngine;
 
 public class Mover : MonoBehaviour 
 {
 	private GameObject child;
 	private Material recentCubeMaterial;
 
-	// Use this for initialization
-	void Start () 
-	{
-		Cursor.lockState = CursorLockMode.Locked;
-		Cursor.visible = false;
-	}
-	
+
 	// Update is called once per frame
 	void Update () 
 	{
 		transform.Translate (Input.GetAxis ("Horizontal") * Time.deltaTime * 15f, 0f, Input.GetAxis ("Vertical") * Time.deltaTime * 15f, Space.Self);
-		transform.Rotate (0f, Input.GetAxis ("Mouse X") * Time.deltaTime * 60f, 0f, Space.World);
-		transform.Rotate (-Input.GetAxis ("Mouse Y") * Time.deltaTime * 60f, 0f, 0f, Space.Self);
 
-		if (Input.GetKeyDown (KeyCode.Mouse0)) 
+		if (Input.GetKey (KeyCode.Mouse0)) 
 		{
-			//Agregar pooling***
+			transform.Rotate (0f, -Input.GetAxis ("Mouse X") * Time.deltaTime * 100f, 0f, Space.World);
+			transform.Rotate (Input.GetAxis ("Mouse Y") * Time.deltaTime * 100f, 0f, 0f, Space.Self);
+		}
+
+		/* Panning - Later -
+		if (Input.GetKey (KeyCode.LeftAlt)) 
+		{
+			if (Input.GetKey (KeyCode.Mouse0)) 
+			{
+				transform.Translate (Input.GetAxis ("Mouse X") * Time.deltaTime * 15f, 0f, Input.GetAxis ("Mouse Y") * Time.deltaTime * 15f, Space.World);
+			}
+		} 
+		//*/
+			
+		if (Input.GetKeyDown (KeyCode.Tab)) 
+		{
 			GameObject newCube = GameObject.Instantiate(Resources.Load("Cube")) as GameObject;
 			newCube.transform.position = transform.position + 10 * transform.forward;
+			newCube.GetComponent<octreeItem> ().addToRoot ();
 		}
 
 		RaycastHit hit = new RaycastHit ();
@@ -39,25 +49,26 @@ public class Mover : MonoBehaviour
 				recentCubeMaterial = seen.GetComponent<MeshRenderer> ().material;
 				recentCubeMaterial.color = Color.cyan;
 
+
 				//INPUT-CODE-------------------------------------------------------***
-				if (Input.GetKeyDown (KeyCode.Mouse1)) 
+				if (Input.GetKeyDown (KeyCode.Q)) 
 				{
 					seen.transform.SetParent (transform);
 					child = seen;
-					child.GetComponent<Rigidbody> ().isKinematic = true;
+					//child.GetComponent<Rigidbody> ().isKinematic = true; //DECOMMENT
 				} 
 
-				if (Input.GetKeyUp (KeyCode.Mouse1)) 
+				if (Input.GetKeyUp (KeyCode.Q)) 
 				{
 					if (child != null) 
 					{
 						child.transform.SetParent (null);
-						child.GetComponent<Rigidbody> ().isKinematic = false;
+						//child.GetComponent<Rigidbody> ().isKinematic = false; //DECOMMENT
 						child = null;
 					}
 				}
 
-				if (Input.GetKeyUp (KeyCode.E)) 
+				if (Input.GetKeyUp (KeyCode.Mouse1)) 
 				{
 					Destroy (seen);
 				}
@@ -74,7 +85,7 @@ public class Mover : MonoBehaviour
 				recentCubeMaterial.color = Color.white;
 		}
 
-		if (Input.GetKeyDown (KeyCode.Q)) 
+		if (Input.GetKeyDown (KeyCode.Escape)) 
 		{
 			Application.Quit ();
 		}

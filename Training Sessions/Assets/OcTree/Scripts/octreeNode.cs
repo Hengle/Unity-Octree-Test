@@ -4,33 +4,38 @@ using UnityEngine;
 
 public class octreeNode
 {
+	//Variables-------------------------------------------------------------------------------
 	public static int maxNumberOfElements = 1;
+	public static float minimumSize = 1f;
 	private static octreeNode _root;
+
+	private List<octreeItem> nodeElements = new List<octreeItem>();
+	private octreeNode[] _children = new octreeNode[8];
+	private float halfSpaceLength;
+	private Vector3 centerSpace;
+	private octreeNode parent;
+
+	//PROPERTIES------------------------------------------------------------------------------
+	public float HalfSpaceLength { get { return halfSpaceLength; } }
+	public Vector3 CenterSpace { get { return centerSpace; } }
+	public octreeNode[] children {get { return _children; } }
 	public static octreeNode root
 	{
 		get
 		{
 			if (_root == null) 
 			{
+				//Mas adelante el octree podria tener un centro distinto de origen:
 				_root = new octreeNode (null, new List<octreeItem>(), 15f, Vector3.zero);
 			}
 			return _root;
 		}
 	}
 
-	private octreeNode parent;
-	private List<octreeItem> nodeElements = new List<octreeItem>();
 
-	public float halfSpaceLength;
-	public Vector3 centerSpace;
+	//Methods---------------------------------------------------------------------------------
 
-	private octreeNode[] _children = new octreeNode[8];
-	public octreeNode[] children
-	{
-		get { return _children; }
-	}
-
-
+	//Runtime method has to be static since it is called before start (no instances exist yet)-
 	[RuntimeInitializeOnLoadMethod]
 	static bool init()
 	{
@@ -38,26 +43,25 @@ public class octreeNode
 	}
 
 
-	//Bob el contructor:
+	//Constructor-
 	public octreeNode(octreeNode parent, List<octreeItem> potentialItems, float halfLength, Vector3 centerPos)
 	{
 		this.parent = parent;
+		this.centerSpace = centerPos;
+		this.halfSpaceLength = halfLength;
 
 		for (int i  = 0; i < potentialItems.Count; i++) 
 		{
 			processItem (potentialItems[i]);
 		}
 
-		this.centerSpace = centerPos;
-		this.halfSpaceLength = halfLength;
-
-		//Graphic representation of the space:
+		//Graphic representation of the space-
 		drawNodeSpace();
 	}
 
 
-	//TODO : Metodo que evalua si el item corresponde que pertenezca o no a este nodo.
-	private bool processItem(octreeItem item)
+	//Method that evaluates if the item belongs to this node, or if it belongs to a child-
+	public bool processItem(octreeItem item)
 	{
 		if (containsItem (item.transform.position)) 
 		{
@@ -77,10 +81,13 @@ public class octreeNode
 			}
 		}
 
+		//If it does not belong to the octree, it gets deleted.
+		//GameObject.Destroy (item.gameObject); //ERROR-*
 		return false;
 	}
 
 
+	//Pushes an item into the node. If the node reaches the limit amount, then it splits and reassigns the elements-
 	private void push(octreeItem item)
 	{
 		if (!nodeElements.Contains (item)) 
@@ -88,13 +95,16 @@ public class octreeNode
 			nodeElements.Add (item);
 		}
 
-		if (nodeElements.Count >= maxNumberOfElements) 
+		if (nodeElements.Count > maxNumberOfElements) 
 		{
 			split ();
+
+			nodeElements.Clear ();
 		}
 	}
 
 
+	//Method that creates the 8 children of this node. After creating them, it empties its own List of items-
 	private void split()
 	{
 		float half = halfSpaceLength / 2f;
@@ -108,22 +118,23 @@ public class octreeNode
 					Vector3 childCenter = new Vector3 (	centerSpace.x + half * Mathf.Pow(-1f, x), 
 														centerSpace.y + half * Mathf.Pow(-1f, y), 
 														centerSpace.z + half * Mathf.Pow(-1f, z));
-					_children[4 * x + 2 * y + z] = new octreeNode (this, containsItem, half, childCenter);
+					_children[4 * x + 2 * y + z] = new octreeNode (this, nodeElements, half, childCenter);
 				}
 			}
 		}
 	}
 
 
+	//Returns true if the vector pos is inside the bounds of this node-
 	private bool containsItem(Vector3 pos)
 	{
-		return 	(pos.x < (centerSpace.x + halfSpaceLength) || pos.x > (centerSpace.x - halfSpaceLength)) && 
-				(pos.y < (centerSpace.y + halfSpaceLength) || pos.y > (centerSpace.y - halfSpaceLength)) && 
-				(pos.z < (centerSpace.z + halfSpaceLength) || pos.z > (centerSpace.z - halfSpaceLength));
+		return 	(pos.x < (centerSpace.x + halfSpaceLength) && pos.x > (centerSpace.x - halfSpaceLength)) && 
+				(pos.y < (centerSpace.y + halfSpaceLength) && pos.y > (centerSpace.y - halfSpaceLength)) && 
+				(pos.z < (centerSpace.z + halfSpaceLength) && pos.z > (centerSpace.z - halfSpaceLength));
 	}
 
 
-	//Debug method for visualizing:
+	//Debug method for visualizing-
 	private void drawNodeSpace()
 	{
 		GameObject obj = new GameObject ();
@@ -165,7 +176,5 @@ public class octreeNode
 		line.SetPosition (13, vertices[2]);
 		line.SetPosition (14, vertices[6]);
 		line.SetPosition (15, vertices[4]);
-
-		Debug.Log ("All Drawn");
 	}
 }
