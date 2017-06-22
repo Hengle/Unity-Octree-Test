@@ -18,7 +18,7 @@ public class octreeItem : MonoBehaviour {
 	{
 		if (transform.position != prevPos) 
 		{
-			//octreeNode.root.processItem (this); //Later-
+			octreeNode.root.processItem (this); //Later-
 
 			prevPos = transform.position;
 		}

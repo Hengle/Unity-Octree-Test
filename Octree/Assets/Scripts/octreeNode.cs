@@ -6,7 +6,7 @@ public class octreeNode
 {
 	//Variables-------------------------------------------------------------------------------
 	public static int maxNumberOfElements = 1;
-	public static float minimumSize = 1f;
+	public static float minimumSize = 0.5f; //Find out how to do it for polygons-*
 	private static octreeNode _root;
 
 	private List<octreeItem> nodeElements = new List<octreeItem>();
@@ -109,18 +109,25 @@ public class octreeNode
 	{
 		float half = halfSpaceLength / 2f;
 
-		for(int y = 0; y < 2; y++)
+		if (half >= minimumSize) 
 		{
-			for(int z = 0; z < 2; z++)
+			for (int y = 0; y < 2; y++) 
 			{
-				for(int x = 0; x < 2; x++)
+				for (int z = 0; z < 2; z++) 
 				{
-					Vector3 childCenter = new Vector3 (	centerSpace.x + half * Mathf.Pow(-1f, x), 
-														centerSpace.y + half * Mathf.Pow(-1f, y), 
-														centerSpace.z + half * Mathf.Pow(-1f, z));
-					_children[4 * x + 2 * y + z] = new octreeNode (this, nodeElements, half, childCenter);
+					for (int x = 0; x < 2; x++) 
+					{
+						Vector3 childCenter = new Vector3 (centerSpace.x + half * Mathf.Pow (-1f, x), 
+										                      centerSpace.y + half * Mathf.Pow (-1f, y), 
+										                      centerSpace.z + half * Mathf.Pow (-1f, z));
+						_children [4 * x + 2 * y + z] = new octreeNode (this, nodeElements, half, childCenter);
+					}
 				}
 			}
+		} 
+		else 
+		{
+			Debug.LogWarning ("Reached minimum node size in octree!");
 		}
 	}
 
