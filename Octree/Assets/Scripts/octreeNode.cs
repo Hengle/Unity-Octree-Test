@@ -34,7 +34,7 @@ public class octreeNode
 			if (_root == null) 
 			{
 				//Mas adelante el octree podria tener un centro distinto de origen:
-				_root = new octreeNode (null, new List<octreeItem>(), 16f, Vector3.zero, "Root");
+				_root = new octreeNode (null, new List<octreeItem>(), 64f, Vector3.zero, "Root");
 			}
 			return _root;
 		}
@@ -115,8 +115,9 @@ public class octreeNode
 					this.nodeElements.Add (item);
 
 					//If the previous owner was not root, then you have to check wether his parent should merge his children back together:
-					//If the previous owner is the parent of this node, it does not enter here.
-					if (prevOwner.parent != null && !ReferenceEquals(this.parent, prevOwner))
+					//If the previous owner is the parent of this node, it does not enter here since it means it just split:
+					//Later, a bool could be used to know when we want to dinamically update the tree:
+					while (prevOwner.parent != null && !ReferenceEquals(this.parent, prevOwner)) //if (prevOwner.parent != null && !ReferenceEquals(this.parent, prevOwner))**##
 					{
 						//We get the parent node of the previous owner, which might get terminated:
 						octreeNode prevOwnerParent = prevOwner.parent;
@@ -129,12 +130,12 @@ public class octreeNode
 							tempElementsList.AddRange (child.nodeElements); 
 						}
 
-						//*
+						//Here, the prevOwnerParent destroy his children:
 						if (totalCount <= maxNumberOfElements)
 						{
 							for (int i = 0; i < 8; i++)
 							{
-								GameObject.Destroy (prevOwnerParent.children [i].obj);//**********************************########################
+								GameObject.Destroy (prevOwnerParent.children [i].obj);
 								prevOwnerParent.children [i] = null;
 							}
 
@@ -145,6 +146,9 @@ public class octreeNode
 								prevOwnerParent.nodeElements.Add (tempElementsList[i]);
 							}
 						}
+
+						//Now, we should set up the params for the next iteration:
+						prevOwner = prevOwnerParent; //Only when using the while()-**##
 					}
 				}
 			}

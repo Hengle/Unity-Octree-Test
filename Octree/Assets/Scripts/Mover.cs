@@ -46,7 +46,7 @@ public class Mover : MonoBehaviour
 				{
 					seen.transform.SetParent (transform);
 					child = seen;
-//					child.GetComponent<Rigidbody> ().isKinematic = true; //DECOMMENT
+					child.GetComponent<Rigidbody> ().isKinematic = true; //DECOMMENT
 
 					Debug.Log(	"Item's name is : " 	+ child.GetComponent<octreeItem> ().name +
 								"\nOwner's name is : " 	+ child.GetComponent<octreeItem> ().ownerNodes[0].name +
@@ -59,7 +59,7 @@ public class Mover : MonoBehaviour
 					if (child != null) 
 					{
 						child.transform.SetParent (null);
-//						child.GetComponent<Rigidbody> ().isKinematic = false; //DECOMMENT
+						child.GetComponent<Rigidbody> ().isKinematic = false; //DECOMMENT
 						child = null;
 					}
 				}
