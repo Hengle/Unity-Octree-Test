@@ -84,7 +84,7 @@ public class octreeNode
 			{
 				for (int i = 0; i < 8; i++) 
 				{
-					if (_children [i].processItem (item))//***************************************************************************************************************************
+					if (_children [i].processItem (item))
 						return true;
 				}
 			}
@@ -108,77 +108,44 @@ public class octreeNode
 				//If the item's owner is different from this node (caused by items moved or node split)
 				if (!ReferenceEquals (this, item.ownerNodes [0]))
 				{
-					//Debug.LogWarning ("CAMBIO DE DUEÑO");
-
 					//You get the previous owner reference:
 					octreeNode prevOwner = item.ownerNodes [0];
 					prevOwner.nodeElements.Remove (item);
 					item.ownerNodes [0] = this;
 					this.nodeElements.Add (item);
 
-					Debug.Log ("Stats when changing ownership;" +
-						"\nprevOwnerNodeElementsCount = " + prevOwner.nodeElements.Count +
-						"\nThisOwnerNodeElementsCount = " + nodeElements.Count);
-
 					//If the previous owner was not root, then you have to check wether his parent should merge his children back together:
-					if (prevOwner.parent != null)
+					//If the previous owner is the parent of this node, it does not enter here.
+					if (prevOwner.parent != null && !ReferenceEquals(this.parent, prevOwner))
 					{
 						//We get the parent node of the previous owner, which might get terminated:
 						octreeNode prevOwnerParent = prevOwner.parent;
-
 						List<octreeItem> tempElementsList = new List<octreeItem> ();
 						int totalCount = 0;
 						for (int i = 0; i < 8; i++) 
 						{
 							octreeNode child = prevOwnerParent.children [i];
-
-							if (child == null)
-							{
-								Debug.LogError ("ERROR; CHILD ES NULL. INFORMACION: " +
-									"\nprevOwner name = " + prevOwner.name + 
-									"\nPrevOwner parent's name = " + prevOwnerParent.name + 
-									"\nIndex of null children of said parent = " + i );
-							}
-
-							Debug.LogWarning ("Informacion de cada child de el padre del antiguo owner al cambiar de Owner: " +
-												"\nchild name = " + child.name +
-												"\nchild's number of elements = " + child.nodeElements.Count + 
-												"\nchild's father = " + prevOwnerParent.name);
-
-							totalCount += child.nodeElements.Count;//**********************************************************************************************************************
+							totalCount += child.nodeElements.Count;
 							tempElementsList.AddRange (child.nodeElements); 
 						}
 
-						/*
+						//*
 						if (totalCount <= maxNumberOfElements)
 						{
-
-							//*
-							if (prevOwnerParent.name == "Root(0)")
-								Debug.LogError ("ESTA BORRANDO LOS HIJOS DE ROOT!!!" +
-									"\nTotal count = " + totalCount +
-									"\nMaxNumberOfElements = " + maxNumberOfElements);
-							//*
-
 							for (int i = 0; i < 8; i++)
 							{
-								GameObject.Destroy (prevOwnerParent.children [i].obj);//**********************************########################3
+								GameObject.Destroy (prevOwnerParent.children [i].obj);//**********************************########################
 								prevOwnerParent.children [i] = null;
 							}
 
-							//*
 							//Every item which pointed to these destroyed child nodes must now point to their parent (new owner):
 							for (int i = 0; i < tempElementsList.Count; i++)
 							{
 								tempElementsList [i].ownerNodes [0] = prevOwnerParent;
 								prevOwnerParent.nodeElements.Add (tempElementsList[i]);
 							}
-							//*/
-
-							//prevOwnerParent.nodeElements.AddRange (tempElementsList);
-						//}
-						//*/
-					} 
+						}
+					}
 				}
 			}
 			//If the item doesn't have an owner, he must be entering the octree for the first time:
@@ -192,25 +159,14 @@ public class octreeNode
 		//If after adding the element the node is overloaded, it has to split and then empty his list:
 		if (nodeElements.Count > maxNumberOfElements) 
 		{
-
-			if (this.name == "node(1)")
-				Debug.LogWarning ("Node 1 is being split" + 
-					"It contains " + nodeElements.Count + " elements." + 
-					"\nBefore the split, root has children: "  + (!ReferenceEquals(root.children[0], null)).ToString() );
-
-			split ();
-
-			nodeElements.Clear ();
-
-			if (this.children [0] != null)
-				Debug.LogWarning ("It created the 8 children and referenced them allright" + 
-					"\nAfter the split, root has children: "  + (!ReferenceEquals(root.children[0], null)).ToString() );
+			if (split ())
+				nodeElements.Clear ();
 		}
 	}
 
 
 	//Method that creates the 8 children of this node. After creating them, it empties its own List of items-
-	private void split()
+	private bool split()
 	{
 		float half = halfSpaceLength / 2f;
 
@@ -225,16 +181,16 @@ public class octreeNode
 						Vector3 childCenter = new Vector3 (centerSpace.x + half * Mathf.Pow (-1f, x), 
 										                      centerSpace.y + half * Mathf.Pow (-1f, y), 
 										                      centerSpace.z + half * Mathf.Pow (-1f, z));
-						
-						//_children [4 * x + 2 * y + z] = new octreeNode (this, nodeElements, half, childCenter, "node");
-						_children [4 * y + 2 * z + x] = new octreeNode (this, nodeElements, half, childCenter, "node");
+
+						_children [4 * y + 2 * z + x] = new octreeNode (this, new List<octreeItem>(nodeElements), half, childCenter, "node");
 					}
 				}
 			}
+			return true;
 		} 
 		else 
 		{
-			Debug.LogWarning ("Reached minimum node size in octree!");
+			return false;
 		}
 	}
 
@@ -242,9 +198,9 @@ public class octreeNode
 	//Returns true if the vector pos is inside the bounds of this node-
 	private bool containsItem(Vector3 pos)
 	{
-		return 	(pos.x < (centerSpace.x + halfSpaceLength) && pos.x >= (centerSpace.x - halfSpaceLength)) && 
-				(pos.y < (centerSpace.y + halfSpaceLength) && pos.y >= (centerSpace.y - halfSpaceLength)) && 
-				(pos.z < (centerSpace.z + halfSpaceLength) && pos.z >= (centerSpace.z - halfSpaceLength));
+		return 	(pos.x <= (centerSpace.x + halfSpaceLength) && pos.x >= (centerSpace.x - halfSpaceLength)) && 
+				(pos.y <= (centerSpace.y + halfSpaceLength) && pos.y >= (centerSpace.y - halfSpaceLength)) && 
+				(pos.z <= (centerSpace.z + halfSpaceLength) && pos.z >= (centerSpace.z - halfSpaceLength));
 	}
 
 

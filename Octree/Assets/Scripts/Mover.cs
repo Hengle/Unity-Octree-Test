@@ -19,16 +19,6 @@ public class Mover : MonoBehaviour
 			transform.Rotate (Input.GetAxis ("Mouse Y") * Time.deltaTime * 100f, 0f, 0f, Space.Self);
 		}
 
-		/* Panning - Later -
-		if (Input.GetKey (KeyCode.LeftAlt)) 
-		{
-			if (Input.GetKey (KeyCode.Mouse0)) 
-			{
-				transform.Translate (Input.GetAxis ("Mouse X") * Time.deltaTime * 15f, 0f, Input.GetAxis ("Mouse Y") * Time.deltaTime * 15f, Space.World);
-			}
-		} 
-		//*/
-
 		//Create a new cube item for the octree node to evaluate:
 		if (Input.GetKeyDown (KeyCode.Tab)) 
 		{
@@ -56,10 +46,12 @@ public class Mover : MonoBehaviour
 				{
 					seen.transform.SetParent (transform);
 					child = seen;
-					//child.GetComponent<Rigidbody> ().isKinematic = true; //DECOMMENT
+//					child.GetComponent<Rigidbody> ().isKinematic = true; //DECOMMENT
 
-					Debug.Log(	"Owner's name is : " 	+ child.GetComponent<octreeItem> ().ownerNodes[0].name +
-								"\nOwner has: " 		+ child.GetComponent<octreeItem> ().ownerNodes[0].nodeElements.Count + " elements.");
+					Debug.Log(	"Item's name is : " 	+ child.GetComponent<octreeItem> ().name +
+								"\nOwner's name is : " 	+ child.GetComponent<octreeItem> ().ownerNodes[0].name +
+								"\nOwner has: " 		+ child.GetComponent<octreeItem> ().ownerNodes[0].nodeElements.Count + " elements." + 
+								"\nRoot has children: " + (!ReferenceEquals(octreeNode.root.children[0], null)).ToString());
 				} 
 
 				if (Input.GetKeyUp (KeyCode.Q)) 
@@ -67,7 +59,7 @@ public class Mover : MonoBehaviour
 					if (child != null) 
 					{
 						child.transform.SetParent (null);
-						//child.GetComponent<Rigidbody> ().isKinematic = false; //DECOMMENT
+//						child.GetComponent<Rigidbody> ().isKinematic = false; //DECOMMENT
 						child = null;
 					}
 				}
