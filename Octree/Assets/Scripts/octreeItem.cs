@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class octreeItem : MonoBehaviour {
+public class octreeItem : MonoBehaviour 
+{
 
 	public List<octreeNode> ownerNodes = new List<octreeNode> ();
 	private Vector3 prevPos;
@@ -18,7 +19,7 @@ public class octreeItem : MonoBehaviour {
 	{
 		if (transform.position != prevPos) 
 		{
-			octreeNode.root.processItem (this); //Later-
+			addToRoot (); //Later-
 
 			prevPos = transform.position;
 		}

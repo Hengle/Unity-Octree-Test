@@ -28,7 +28,8 @@ public class Mover : MonoBehaviour
 			}
 		} 
 		//*/
-			
+
+		//Create a new cube item for the octree node to evaluate:
 		if (Input.GetKeyDown (KeyCode.Tab)) 
 		{
 			GameObject newCube = GameObject.Instantiate(Resources.Load("Cube")) as GameObject;
@@ -56,6 +57,9 @@ public class Mover : MonoBehaviour
 					seen.transform.SetParent (transform);
 					child = seen;
 					//child.GetComponent<Rigidbody> ().isKinematic = true; //DECOMMENT
+
+					Debug.Log(	"Owner's name is : " 	+ child.GetComponent<octreeItem> ().ownerNodes[0].name +
+								"\nOwner has: " 		+ child.GetComponent<octreeItem> ().ownerNodes[0].nodeElements.Count + " elements.");
 				} 
 
 				if (Input.GetKeyUp (KeyCode.Q)) 
